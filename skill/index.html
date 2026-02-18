@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>skill issue · skill</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #ffffff;
+      --fg: #333333;
+      --muted: rgba(0,0,0,0.62);
+      --border: rgba(0,0,0,0.12);
+      --panel: rgba(255,255,255,0.92);
+      --max: 860px;
+      --radius: 12px;
+      --codebg: #ffffff;
+      --codefg: #222222;
+    }
+
+    /* intentionally keep the same white theme as the homepage */
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    /* match homepage: keep things crisp/white */
+    @media (prefers-color-scheme: dark) {
+      body { background: #ffffff; color: #333333; }
+    }
+
+    /* keep the same single-nav vibe as the home page */
+    nav {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    nav a {
+      pointer-events: auto;
+      text-decoration: none;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(6px);
+      font-size: 15px;
+    }
+
+    /* keep nav pill white as well */
+    @media (prefers-color-scheme: dark) {
+      nav a { background: rgba(255,255,255,0.9); }
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    main {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 84px 20px 56px;
+    }
+
+    header {
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: normal;
+      font-size: clamp(2.1rem, 5vw, 3.2rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .meta a {
+      color: var(--fg);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta a:hover { text-decoration: underline; }
+
+    section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 16px 16px;
+      margin-top: 14px;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 720px) {
+      .grid2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    h2 {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+
+    .eyebrow {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    ul { margin: 10px 0 10px 18px; color: var(--muted); }
+    li { margin: 6px 0; line-height: 1.55; font-size: 15px; }
+
+    pre {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 34px 12px 12px;
+      overflow: auto;
+      background: var(--codebg);
+      color: var(--codefg);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      position: relative;
+      z-index: 1;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .codeblock { position: relative; }
+
+    .copy {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Courier New', Courier, monospace;
+      z-index: 2;
+    }
+
+    .copy:hover { color: var(--fg); }
+
+    code { font-family: 'Courier New', Courier, monospace; }
+
+    details {
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--fg);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      user-select: none;
+    }
+
+    .note {
+      margin-top: 10px;
+      padding: 12px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .k { color: var(--fg); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="../">home</a>
+  </nav>
+
+  <main>
+    <header>
+      <h1>skill issue</h1>
+      <div class="subtitle">only skill you need to realize your potential.</div>
+      <div class="meta">
+        <span>github: <a href="https://github.com/vignesh07" target="_blank" rel="noopener noreferrer">vignesh07</a></span>
+        &nbsp;·&nbsp;
+        <span>twitter: <a href="https://x.com/_vgnsh" target="_blank" rel="noopener noreferrer">_vgnsh</a></span>
+      </div>
+    </header>
+
+    <section>
+      <h2>what it does</h2>
+      <ul>
+        <li>listens for “i’m stuck”, “i don’t know how to…”, “can you help me…”, etc.</li>
+        <li>occasionally replies: <span class="k">skill issue</span> (cooldown + randomness so it doesn’t spam).</li>
+        <li>playful, not mean.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>One-line install</h2>
+      <p>
+        This skill installs as a folder named <code>skill-issue</code> containing <code>SKILL.md</code>. Agents discover it by scanning their skills directories.
+      </p>
+      <div class="codeblock">
+        <pre><code>curl -fsSL https://raw.githubusercontent.com/vignesh07/skill-issue/main/install.sh | bash</code></pre>
+      </div>
+
+      <p>
+        What it does: downloads <code>SKILL.md</code> and writes it into the standard per-user skill folders (creating the <code>skill-issue</code> folder if needed).
+      </p>
+
+      <div class="note">
+        <div>
+          <span class="k">codex note:</span> codex has used both <code>~/.codex/skills</code> and <code>~/.agents/skills</code> in different builds; the installer writes to both.
+        </div>
+      </div>
+
+      <h2 style="margin-top:14px">Install for a specific tool</h2>
+      <div class="grid2">
+        <div>
+          <p><span class="k">Claude Code</span></p>
+          <div class="codeblock">
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/vignesh07/skill-issue/main/install.sh | bash -s -- --tool claude</code></pre>
+          </div>
+        </div>
+
+        <div>
+          <p><span class="k">Codex</span></p>
+          <div class="codeblock">
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/vignesh07/skill-issue/main/install.sh | bash -s -- --tool codex</code></pre>
+          </div>
+        </div>
+
+        <div>
+          <p><span class="k">Gemini CLI</span></p>
+          <div class="codeblock">
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/vignesh07/skill-issue/main/install.sh | bash -s -- --tool gemini</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:14px">Manual paths</h2>
+      <p><span class="k">Claude Code</span>: <code>~/.claude/skills/skill-issue/SKILL.md</code> (or <code>.claude/skills/skill-issue/SKILL.md</code> in a project)</p>
+      <p><span class="k">Codex</span>: <code>~/.codex/skills/skill-issue/SKILL.md</code> (and sometimes <code>~/.agents/skills/skill-issue/SKILL.md</code>)</p>
+      <p><span class="k">Gemini CLI</span>: supports <code>gemini skills install &lt;git-url&gt;</code> or a local <code>.gemini/skills</code> folder</p>
+      <p><span class="k">Cursor</span>: create <code>.cursor/skills/skill-issue/</code> inside your project and put <code>SKILL.md</code> there. if your cursor setup uses a different skills/rules path, the key is: a folder named <code>skill-issue</code> containing <code>SKILL.md</code>.</p>
+    </section>
+
+    <section>
+      <h2>config (optional)</h2>
+      <p>
+        if you’re using a loader that reads <code>skill.json</code>, the knobs are: <span class="k">chance</span> (default 0.3) and <span class="k">cooldownMinutes</span> (default 5).
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // minimal copy buttons for code blocks
+    (function () {
+      for (const block of document.querySelectorAll('.codeblock')) {
+        const pre = block.querySelector('pre');
+        if (!pre) continue;
+
+        const btn = document.createElement('button');
+        btn.className = 'copy';
+        btn.type = 'button';
+        btn.textContent = 'copy';
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pre.textContent);
+            btn.textContent = 'copied';
+            setTimeout(() => (btn.textContent = 'copy'), 900);
+          } catch {
+            btn.textContent = 'failed';
+            setTimeout(() => (btn.textContent = 'copy'), 900);
+          }
+        });
+
+        block.appendChild(btn);
+      }
+    })();
+  </script>
+</body>
+</html>
