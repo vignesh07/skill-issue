@@ -1,65 +1,35 @@
-# @vignesh/skill-issue
+# skill issue
 
-A playful Clawdbot skill that responds "skill issue" when users express inability or frustration.
+A tiny Agent Skill (SKILL.md) that playfully replies “skill issue” when the user expresses being stuck.
 
 ## Install
 
-### Agent-skill install (Claude Code / Codex / Cursor / Gemini CLI)
+### One-line install (recommended)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vignesh07/skill-issue/main/install.sh | bash
 ```
 
-(Or pick one target: add `--tool claude|codex|cursor|gemini|openclaw`.)
+### Manual install
 
-### npm install (Clawdbot plugin)
+Copy `SKILL.md` into a skill folder for your tool.
 
-```bash
-npm install @vignesh/skill-issue
-```
+- Claude Code:
+  - `~/.claude/skills/skill-issue/SKILL.md` (personal)
+  - `.claude/skills/skill-issue/SKILL.md` (project)
 
-Or install via Clawdbot CLI:
+- Codex (varies by build):
+  - `~/.codex/skills/skill-issue/SKILL.md`
+  - sometimes also: `~/.agents/skills/skill-issue/SKILL.md`
 
-```bash
-clawdbot plugins install @vignesh/skill-issue
-```
+- Cursor:
+  - best-effort: `.cursor/skills/skill-issue/SKILL.md` (project)
 
-## Configure
+## What it does
 
-Add to your `clawdbot.json`:
-
-```json
-{
-  "skills": {
-    "entries": {
-      "skill-issue": {
-        "enabled": true,
-        "config": {
-          "chance": 0.3,
-          "cooldownMinutes": 5
-        }
-      }
-    }
-  }
-}
-```
-
-## Config Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `chance` | number | 0.3 | Probability of triggering (0.0-1.0) |
-| `cooldownMinutes` | number | 5 | Minutes before can trigger again |
-| `enabled` | boolean | true | Enable/disable the skill |
-
-## Triggers
-
-Responds when user expresses:
-- "I don't know how to..."
-- "I'm stuck..."
-- "This is too hard..."
-- "I can't figure this out..."
-- And more...
+- Triggers on phrases like “i’m stuck”, “i don’t know how to…”, “can you help me…”, etc.
+- Responds with “skill issue”
+- Includes a little randomness + a cooldown (so it doesn’t spam)
 
 ## License
 
