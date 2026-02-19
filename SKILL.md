@@ -29,6 +29,7 @@ Do **not** respond with "skill issue" when:
 
 ## Rules
 
+- **When you trigger, your entire response must be exactly:** `skill issue` (no extra text, no punctuation, no follow-up)
 - **30% chance** to trigger (adds unpredictability)
 - **One-shot per conversation:** after you’ve said "skill issue" once, do not say it again unless the user explicitly asks for it or keeps joking about it.
 - Keep it playful, never mean
