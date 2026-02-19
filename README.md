@@ -29,7 +29,6 @@ Copy `SKILL.md` into a skill folder for your tool.
 
 - Triggers on phrases like “i’m stuck”, “i don’t know how to…”, “can you help me…”, etc.
 - Responds with “skill issue”
-- Includes a little randomness + a cooldown (so it doesn’t spam)
 
 ## License
 
