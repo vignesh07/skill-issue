@@ -156,6 +156,47 @@ async function getVisitStats() {
   return { today, d7, d30, all };
 }
 
+async function getVisitTimeSeries(days = 30) {
+  if (!visitsPool) return null;
+  await ensureVisitsTable();
+
+  const d = Math.max(1, Math.min(365, Number.parseInt(String(days), 10) || 30));
+
+  // Build a complete day series so charts don't skip missing days.
+  // Use the DB timezone (typically UTC on Railway).
+  const sql = `
+    WITH days AS (
+      SELECT generate_series(
+        date_trunc('day', now()) - ($1::int - 1) * interval '1 day',
+        date_trunc('day', now()),
+        interval '1 day'
+      ) AS day
+    ), agg AS (
+      SELECT
+        date_trunc('day', ts) AS day,
+        COUNT(*)::bigint AS page_views,
+        COUNT(DISTINCT visitor_id)::bigint AS unique_visitors
+      FROM visits
+      WHERE ts >= date_trunc('day', now()) - ($1::int - 1) * interval '1 day'
+      GROUP BY 1
+    )
+    SELECT
+      days.day,
+      COALESCE(agg.page_views, 0)::bigint AS page_views,
+      COALESCE(agg.unique_visitors, 0)::bigint AS unique_visitors
+    FROM days
+    LEFT JOIN agg USING (day)
+    ORDER BY days.day ASC;
+  `;
+
+  const r = await visitsPool.query(sql, [d]);
+  return r.rows.map((row) => ({
+    day: new Date(row.day).toISOString().slice(0, 10),
+    pageViews: Number(row.page_views || 0),
+    uniqueVisitors: Number(row.unique_visitors || 0),
+  }));
+}
+
 const app = express();
 app.disable("x-powered-by");
 
@@ -208,6 +249,17 @@ app.get("/admin/api/visits", requireAdminAuth, async (_req, res) => {
   }
 });
 
+app.get("/admin/api/visits/timeseries", requireAdminAuth, async (req, res) => {
+  try {
+    const days = req.query.days ?? "30";
+    const series = await getVisitTimeSeries(days);
+    if (!series) return res.status(400).json({ ok: false, error: "DATABASE_URL not set" });
+    return res.json({ ok: true, days: Number.parseInt(String(days), 10) || 30, series });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 app.get("/admin/visits", requireAdminAuth, async (_req, res) => {
   try {
     const stats = await getVisitStats();
@@ -249,7 +301,22 @@ app.get("/admin/visits", requireAdminAuth, async (_req, res) => {
         <tr><td>All time</td><td>${stats.all.pageViews}</td><td>${stats.all.uniqueVisitors}</td></tr>
       </tbody>
     </table>
-    <div class="muted" style="margin-top:0.75rem">JSON: <a href="/admin/api/visits">/admin/api/visits</a></div>
+    <div class="muted" style="margin-top:0.75rem">
+      JSON: <a href="/admin/api/visits">/admin/api/visits</a>
+      &nbsp;|&nbsp;
+      Timeseries: <a href="/admin/api/visits/timeseries?days=30">/admin/api/visits/timeseries?days=30</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap: 1rem; flex-wrap: wrap;">
+      <div><strong>Last 30 days</strong></div>
+      <div class="muted">(views + uniques per day)</div>
+    </div>
+    <div style="margin-top: 0.75rem">
+      <canvas id="chart" height="120"></canvas>
+    </div>
+    <div id="chartError" class="muted" style="margin-top:0.5rem"></div>
   </div>
 
   <div class="card">
@@ -257,8 +324,53 @@ app.get("/admin/visits", requireAdminAuth, async (_req, res) => {
     <ul class="muted">
       <li>"Unique visitors" = distinct <code>vid</code> cookies in the time window.</li>
       <li>Counts GETs; excludes <code>/admin</code>, <code>/healthz</code>, and common asset extensions.</li>
+      <li>Charts load Chart.js from a CDN.</li>
     </ul>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    (async () => {
+      const errEl = document.getElementById('chartError');
+      try {
+        const res = await fetch('/admin/api/visits/timeseries?days=30', { cache: 'no-store' });
+        const data = await res.json();
+        if (!data || !data.ok) throw new Error((data && data.error) || 'failed to load');
+
+        const labels = data.series.map(p => p.day);
+        const views = data.series.map(p => p.pageViews);
+        const uniques = data.series.map(p => p.uniqueVisitors);
+
+        const ctx = document.getElementById('chart');
+        // eslint-disable-next-line no-undef
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              { label: 'Page views', data: views, borderColor: '#111', backgroundColor: 'rgba(0,0,0,0.08)', tension: 0.25, fill: true },
+              { label: 'Unique visitors', data: uniques, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.08)', tension: 0.25, fill: true }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom' },
+              tooltip: { enabled: true }
+            },
+            scales: {
+              x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+              y: { beginAtZero: true, grace: '5%' }
+            }
+          }
+        });
+      } catch (e) {
+        errEl.textContent = 'Chart failed to load: ' + (e && e.message ? e.message : String(e));
+      }
+    })();
+  </script>
 </body>
 </html>`);
   } catch (err) {
